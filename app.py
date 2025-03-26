@@ -3,13 +3,18 @@ import pandas as pd
 import numpy as np
 import pickle
 from sklearn.preprocessing import StandardScaler
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 import joblib
 
 app = Flask(__name__)
 
-# Enable CORS for the specific frontend URL
-CORS(app, supports_credentials=True, origins=["https://vite-app-str4.onrender.com"])
+# Enable CORS globally for all routes
+CORS(app, supports_credentials=True)
+
+@app.route("/")
+@cross_origin()  # Allows all origins, all methods
+def helloWorld():
+    return "Hello, cross-origin-world!"
 
 # Load the trained model
 filename = 'random_forest_model.pkl'
@@ -44,8 +49,8 @@ reference_data = pd.DataFrame({
 # Fit the scaler on reference data
 scaler.fit(reference_data[numerical_features])
 
-
 @app.route('/predict', methods=['POST'])
+@cross_origin()  # Allows all origins, all methods
 def predict():
     try:
         data = request.get_json()
@@ -73,7 +78,6 @@ def predict():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080)
