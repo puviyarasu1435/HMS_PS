@@ -5,13 +5,14 @@ import pickle
 from sklearn.preprocessing import StandardScaler
 from flask_cors import CORS
 import joblib
+
 app = Flask(__name__)
-# CORS(app, supports_credentials=True)
+
+# Enable CORS for the specific frontend URL
+CORS(app, supports_credentials=True, origins=["https://vite-app-str4.onrender.com"])
 
 # Load the trained model
 filename = 'random_forest_model.pkl'
-# loaded_model = joblib.load(filename,'rb')
-# loaded_model = joblib.load("random_forest_model.pkl")
 loaded_model = pickle.load(open(filename, 'rb'))
 
 # Initialize scaler
@@ -26,7 +27,7 @@ numerical_features = [
 
 classification_mapping = {0: 'Need Improvement', 1: 'Healing', 2: 'Recovered'}
 
-# Reference dataset for fitting the scaler (Use real historical data if available)
+# Reference dataset for fitting the scaler
 reference_data = pd.DataFrame({
     "Patient ID": [100, 101, 102, 103, 104],
     "Age": [30, 40, 50, 60, 70],
@@ -47,7 +48,6 @@ scaler.fit(reference_data[numerical_features])
 @app.route('/predict', methods=['POST'])
 def predict():
     try:
-        # Get input data
         data = request.get_json()
         print(data)
         new_patient_data = pd.DataFrame([data])
@@ -57,7 +57,7 @@ def predict():
 
         # Make a prediction
         prediction = loaded_model.predict(new_patient_data)
-        print(f"Raw prediction output: {prediction}")  # Debugging output
+        print(f"Raw prediction output: {prediction}")
 
         # Apply threshold-based classification
         if prediction[0] < 0.5:
